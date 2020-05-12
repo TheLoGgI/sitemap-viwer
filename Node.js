@@ -1,13 +1,18 @@
 const fetch = require('node-fetch')
 const cheerio = require('cheerio')
 
+
 class Node {
-    constructor(domain, href) {
-        this.domain = domain || getDomain(href)
+    constructor(href) {
+        this.host = getDomain(href)
+        this.href = href
         this.id = this.createID()
         this.children = new Set()
         this.parrent = new Set()
-        this.getLinks(href)
+        
+        // if (getDomain(href) === origin) {
+            this.getLinks(href)
+        // }
     }
 
     // Makes dublicates for each add
@@ -16,22 +21,18 @@ class Node {
         if (typeof node !== 'object') {
             console.log(node, 'node is not an obejct');
             
-            node = new Node(null, node.toLowerCase())
+            node = new Node(node.toLowerCase())
         }
         console.log(node);
-        
-        // console.log('node', node, this);
 
         //    Check for same node id
         if (this.children.has(node.id)) {
             // Generate ID for node
-            console.log('Hery');
             node.id = this.createID()
         }
         //  add node
         this.children.add(node)
         node.parrent.add(this)
-        console.log("END OF FUNCTION", this);
         
     }
 
@@ -102,13 +103,16 @@ class Node {
 
 
 
-    async getLinks(url, currentNode) {
+    async getLinks(url) {
         const thisObject = this
         
         const reponse = await fetch(url).catch(error => {
             throw error
         })
         const data = await reponse.text()
+
+        console.log(url);
+        
 
         const $ = cheerio.load(data);
         const testDomain = /\.\w{2,3}/
@@ -123,7 +127,8 @@ class Node {
 
             thisObject.addChild(link)
         });
-
+        console.log('END OF FETCH');
+        
     }
 
 }
